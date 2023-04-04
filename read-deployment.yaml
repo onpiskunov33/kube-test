@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: read
+  labels:
+    app: read
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: read-app
+  template:
+    metadata:
+      labels:
+        app: read-app
+    spec:
+      containers:
+      - name: my-postgres-read
+        image: onpiskunov/postgres-read
+        imagePullPolicy: "IfNotPresent"
+        env:        
+        - name: POSTGRES_DB
+          value: MyBase
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-password
+              key: POSTGRES_ROOT_PASSWORD
+        ports:
+        - containerPort: 8000

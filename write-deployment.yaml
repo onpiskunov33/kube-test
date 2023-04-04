@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: write
+  labels:
+    app: write
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: write-app
+  template:
+    metadata:
+      labels:
+        app: write-app
+    spec:
+      containers:
+      - name: my-postgres-write
+        image: onpiskunov/postgres-write
+        imagePullPolicy: "IfNotPresent"
+        env:        
+        - name: POSTGRES_DB
+          value: MyBase
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-password
+              key: POSTGRES_ROOT_PASSWORD
+        ports:
+        - containerPort: 8000

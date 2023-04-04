@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-app
+  template:
+    metadata:
+      labels:
+        app: postgres-app
+    spec:
+      containers:
+      - name: my-postgres-image
+        image: onpiskunov/my-postgres-image
+        imagePullPolicy: "IfNotPresent"
+        env:        
+        - name: POSTGRES_DB
+          value: MyBase
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-password
+              key: POSTGRES_ROOT_PASSWORD
+        ports:
+        - containerPort: 5432
+          name: postgres
+        volumeMounts:
+        - name: postgres-pvc
+          mountPath: "/var/lib/postgresql/data"
+      volumes:
+        - name: postgres-pvc
+          persistentVolumeClaim:
+            claimName: postgres-pvc
